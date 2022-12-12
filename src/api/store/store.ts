@@ -20,191 +20,226 @@ import {
   QueryFunction,
   MutationFunction,
   UseQueryResult,
-  QueryKey
-} from 'react-query'
-import type {
-  GetInventory200,
-  Order
-} from '.././model'
-import { useCustomInstance, ErrorType } from '../../../use-custom-instance'
+  QueryKey,
+} from '@tanstack/react-query';
+import type {GetInventory200, Order} from '.././model';
+import {useCustomInstance, ErrorType} from '../../../use-custom-instance';
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
-      type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
+type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 /**
  * Returns a map of status codes to quantities
  * @summary Returns pet inventories by status
  */
 export const useGetInventoryHook = () => {
-        const getInventory = useCustomInstance<GetInventory200>();
+  const getInventory = useCustomInstance<GetInventory200>();
 
-        return (
-    
-signal?: AbortSignal,
- ) => {
-        return getInventory(
-          {url: `/store/inventory`, method: 'get', signal
-    },
-          );
-        }
-      }
-    
+  return (signal?: AbortSignal) => {
+    return getInventory({url: `/store/inventory`, method: 'get', signal});
+  };
+};
 
 export const getGetInventoryQueryKey = () => [`/store/inventory`];
 
-    
-export type GetInventoryQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>>
-export type GetInventoryQueryError = ErrorType<unknown>
+export type GetInventoryQueryResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>
+>;
+export type GetInventoryQueryError = ErrorType<unknown>;
 
-export const useGetInventory = <TData = Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>, TError, TData>, }
-
-  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-
-  const {query: queryOptions} = options ?? {}
+export const useGetInventory = <
+  TData = Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>,
+    TError,
+    TData
+  >;
+}): UseQueryResult<TData, TError> & {queryKey: QueryKey} => {
+  const {query: queryOptions} = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getGetInventoryQueryKey();
 
-  const getInventory =  useGetInventoryHook()
+  const getInventory = useGetInventoryHook();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>> = ({ signal }) => getInventory(signal);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>
+  > = ({signal}) => getInventory(signal);
 
-  const query = useQuery<Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>, TError, TData>(queryKey, queryFn, queryOptions)
+  const query = useQuery<
+    Awaited<ReturnType<ReturnType<typeof useGetInventoryHook>>>,
+    TError,
+    TData
+  >(queryKey, queryFn, queryOptions);
 
   return {
     queryKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 
 /**
  * Place a new order in the store
  * @summary Place an order for a pet
  */
 export const usePlaceOrderHook = () => {
-        const placeOrder = useCustomInstance<Order>();
+  const placeOrder = useCustomInstance<Order>();
 
-        return (
-    order: Order,
- ) => {
-        return placeOrder(
-          {url: `/store/order`, method: 'post',
+  return (order: Order) => {
+    return placeOrder({
+      url: `/store/order`,
+      method: 'post',
       headers: {'Content-Type': 'application/json'},
-      data: order
-    },
-          );
-        }
-      }
-    
+      data: order,
+    });
+  };
+};
 
+export type PlaceOrderMutationResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof usePlaceOrderHook>>>
+>;
+export type PlaceOrderMutationBody = Order;
+export type PlaceOrderMutationError = ErrorType<void>;
 
-    export type PlaceOrderMutationResult = NonNullable<Awaited<ReturnType<ReturnType<typeof usePlaceOrderHook>>>>
-    export type PlaceOrderMutationBody = Order
-    export type PlaceOrderMutationError = ErrorType<void>
+export const usePlaceOrder = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<ReturnType<typeof usePlaceOrderHook>>>,
+    TError,
+    {data: Order},
+    TContext
+  >;
+}) => {
+  const {mutation: mutationOptions} = options ?? {};
 
-    export const usePlaceOrder = <TError = ErrorType<void>,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<ReturnType<typeof usePlaceOrderHook>>>, TError,{data: Order}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options ?? {}
+  const placeOrder = usePlaceOrderHook();
 
-      const placeOrder =  usePlaceOrderHook()
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<ReturnType<typeof usePlaceOrderHook>>>,
+    {data: Order}
+  > = props => {
+    const {data} = props ?? {};
 
+    return placeOrder(data);
+  };
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<ReturnType<typeof usePlaceOrderHook>>>, {data: Order}> = (props) => {
-          const {data} = props ?? {};
-
-          return  placeOrder(data,)
-        }
-
-      return useMutation<Awaited<ReturnType<typeof placeOrder>>, TError, {data: Order}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
+  return useMutation<
+    Awaited<ReturnType<typeof placeOrder>>,
+    TError,
+    {data: Order},
+    TContext
+  >(mutationFn, mutationOptions);
+};
+/**
  * For valid response try integer IDs with value <= 5 or > 10. Other values will generate exceptions.
  * @summary Find purchase order by ID
  */
 export const useGetOrderByIdHook = () => {
-        const getOrderById = useCustomInstance<Order>();
+  const getOrderById = useCustomInstance<Order>();
 
-        return (
-    orderId: number,
-signal?: AbortSignal,
- ) => {
-        return getOrderById(
-          {url: `/store/order/${orderId}`, method: 'get', signal
-    },
-          );
-        }
-      }
-    
+  return (orderId: number, signal?: AbortSignal) => {
+    return getOrderById({
+      url: `/store/order/${orderId}`,
+      method: 'get',
+      signal,
+    });
+  };
+};
 
-export const getGetOrderByIdQueryKey = (orderId: number,) => [`/store/order/${orderId}`];
+export const getGetOrderByIdQueryKey = (orderId: number) => [
+  `/store/order/${orderId}`,
+];
 
-    
-export type GetOrderByIdQueryResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>>
-export type GetOrderByIdQueryError = ErrorType<void>
+export type GetOrderByIdQueryResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>
+>;
+export type GetOrderByIdQueryError = ErrorType<void>;
 
-export const useGetOrderById = <TData = Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>, TError = ErrorType<void>>(
- orderId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>, TError, TData>, }
-
-  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-
-  const {query: queryOptions} = options ?? {}
+export const useGetOrderById = <
+  TData = Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>,
+  TError = ErrorType<void>,
+>(
+  orderId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>,
+      TError,
+      TData
+    >;
+  },
+): UseQueryResult<TData, TError> & {queryKey: QueryKey} => {
+  const {query: queryOptions} = options ?? {};
 
   const queryKey = queryOptions?.queryKey ?? getGetOrderByIdQueryKey(orderId);
 
-  const getOrderById =  useGetOrderByIdHook()
+  const getOrderById = useGetOrderByIdHook();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>> = ({ signal }) => getOrderById(orderId, signal);
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>
+  > = ({signal}) => getOrderById(orderId, signal);
 
-  const query = useQuery<Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>, TError, TData>(queryKey, queryFn, {enabled: !!(orderId), ...queryOptions})
+  const query = useQuery<
+    Awaited<ReturnType<ReturnType<typeof useGetOrderByIdHook>>>,
+    TError,
+    TData
+  >(queryKey, queryFn, {enabled: !!orderId, ...queryOptions});
 
   return {
     queryKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 
 /**
  * For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors
  * @summary Delete purchase order by ID
  */
 export const useDeleteOrderHook = () => {
-        const deleteOrder = useCustomInstance<unknown>();
+  const deleteOrder = useCustomInstance<unknown>();
 
-        return (
-    orderId: number,
- ) => {
-        return deleteOrder(
-          {url: `/store/order/${orderId}`, method: 'delete'
-    },
-          );
-        }
-      }
-    
+  return (orderId: number) => {
+    return deleteOrder({url: `/store/order/${orderId}`, method: 'delete'});
+  };
+};
 
+export type DeleteOrderMutationResult = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof useDeleteOrderHook>>>
+>;
 
-    export type DeleteOrderMutationResult = NonNullable<Awaited<ReturnType<ReturnType<typeof useDeleteOrderHook>>>>
-    
-    export type DeleteOrderMutationError = ErrorType<void>
+export type DeleteOrderMutationError = ErrorType<void>;
 
-    export const useDeleteOrder = <TError = ErrorType<void>,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<ReturnType<typeof useDeleteOrderHook>>>, TError,{orderId: number}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options ?? {}
+export const useDeleteOrder = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<ReturnType<typeof useDeleteOrderHook>>>,
+    TError,
+    {orderId: number},
+    TContext
+  >;
+}) => {
+  const {mutation: mutationOptions} = options ?? {};
 
-      const deleteOrder =  useDeleteOrderHook()
+  const deleteOrder = useDeleteOrderHook();
 
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<ReturnType<typeof useDeleteOrderHook>>>,
+    {orderId: number}
+  > = props => {
+    const {orderId} = props ?? {};
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<ReturnType<typeof useDeleteOrderHook>>>, {orderId: number}> = (props) => {
-          const {orderId} = props ?? {};
+    return deleteOrder(orderId);
+  };
 
-          return  deleteOrder(orderId,)
-        }
-
-      return useMutation<Awaited<ReturnType<typeof deleteOrder>>, TError, {orderId: number}, TContext>(mutationFn, mutationOptions)
-    }
-    
+  return useMutation<
+    Awaited<ReturnType<typeof deleteOrder>>,
+    TError,
+    {orderId: number},
+    TContext
+  >(mutationFn, mutationOptions);
+};

@@ -1,34 +1,48 @@
-import {SafeAreaView, StyleSheet, Text} from 'react-native';
-import React, {useState} from 'react';
-import {useLoginUser} from '../../api/user/user';
+import React from 'react';
+import {useForm} from 'react-hook-form';
+import {yupResolver} from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import {useAuth} from 'stores/auth';
+import {Button, Input, Screen} from 'ui/components';
+
+type FormData = {
+  email: string;
+  password: string;
+};
+
+const schema = yup.object().shape({
+  email: yup.string().required().email(),
+  password: yup.string().required().min(6),
+});
 
 const Login = () => {
-  const [state, setState] = useState({
-    isApiCalled: false,
-    username: '',
-    password: '',
-  });
-  const {status, data, isLoading} = useLoginUser(
-    {username: state.username, password: state.password},
-    {query: {enabled: state.isApiCalled}},
-  );
-  console.log(data, status, isLoading);
+  const {signIn} = useAuth();
 
-  const handleLogin = () => {
-    setState({isApiCalled: true, username: 'test', password: 'test'});
-    console.log('Login received from server');
+  const {handleSubmit, control} = useForm<FormData>({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = (data: FormData) => {
+    console.log(data);
+    signIn({access: 'access-token', refresh: 'refresh-token'});
   };
   return (
-    <SafeAreaView style={styles.container}>
-      <Text onPress={handleLogin}>Login</Text>
-    </SafeAreaView>
+    <Screen>
+      <Input control={control} name="email" label="Email" />
+      <Input
+        control={control}
+        name="password"
+        label="Password"
+        placeholder="***"
+        secureTextEntry={true}
+      />
+      <Button
+        label="Login"
+        onPress={handleSubmit(onSubmit)}
+        variant="secondary"
+      />
+    </Screen>
   );
 };
 
 export default Login;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

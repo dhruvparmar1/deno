@@ -13,4 +13,4 @@ Some useful links:
  * OpenAPI spec version: 1.0.11
  */
 
-export type LoginUserParams = { username?: string; password?: string };
+export type LoginUserParams = {username?: string; password?: string};

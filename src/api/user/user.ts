@@ -21,7 +21,7 @@ import {
   MutationFunction,
   UseQueryResult,
   QueryKey,
-} from 'react-query';
+} from '@tanstack/react-query';
 import type {User, LoginUserParams} from '.././model';
 import {useCustomInstance, ErrorType} from '../../../use-custom-instance';
 
